@@ -9,6 +9,9 @@
 #define BUFFER_SIZE 1024
 #define IP_SERVER "127.0.0.1"
 
+#define BRANCO "\033[0;37m"
+#define AZUL "\033[0;34m"
+
 using namespace std;
 
 void send_file(string filename, int socket);
@@ -45,11 +48,21 @@ int main() {
 
     cout << "Conectado ao servidor na porta " << PORT << '\n';
 
+    string username;
+    cout << "\nDigite seu nome de Usuário: ";
+    getline(cin, username);
+
+    send(socket_client, username.c_str(), strlen(username.c_str()), 0);
+    usleep(100000);
+    
+    username = AZUL+username;
+
     char buffer_server[BUFFER_SIZE] = {0}; //Recebe resposta do servidor
     string message;//envia mensagem para servidor
     // Enviar mensagens para o servidor
     while(true){
-        cout << "\nClient: ";
+        cout << "\n" << username << ": ";
+        cout << BRANCO;
         getline(cin, message);
         if(message.size() < BUFFER_SIZE){
             //Fecha conexão
@@ -69,13 +82,13 @@ int main() {
                 // Enviar sinal de término do arquivo
                 send(socket_client, "/endfile", 8, 0);
 
-                cout << "\n[CLIENT] Arquivo " << filename << " enviado com sucesso.\n"; 
+                cout << BRANCO << "[CLIENT] Arquivo " << filename << " enviado com sucesso.\n"; 
             }else{//Envia mensagem ao servidor
                 send(socket_client, message.c_str(), message.length(), 0);
             }
             //Recebe mensagem do servidor
             recv(socket_client, buffer_server, BUFFER_SIZE, 0);
-            cout << "\n"<< buffer_server << '\n';
+            cout << BRANCO << buffer_server << '\n';
 
             //Limpa buffer
             memset(buffer_server, 0, BUFFER_SIZE);
