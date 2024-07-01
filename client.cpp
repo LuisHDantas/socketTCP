@@ -11,6 +11,9 @@
 
 using namespace std;
 
+void send_file(string filename, int socket);
+bool extractFileName(const string &input, string &filename);
+
 int main() {
     int socket_client;
     struct sockaddr_in serv_addr;
@@ -46,18 +49,33 @@ int main() {
     string message;//envia mensagem para servidor
     // Enviar mensagens para o servidor
     while(true){
-        cout << "Digite a mensagem para enviar ao servidor: " << '\n';
+        cout << "\nClient: ";
         getline(cin, message);
         if(message.size() < BUFFER_SIZE){
             //Fecha conexão
             if(message == "/exit") break;
+            
+            string filename;
+            if(extractFileName(message, filename)){
+                //indica ao servidor que vamos enviar um arquivo
+                send(socket_client, "/file", 5, 0);
+                usleep(100000);
+                send(socket_client, filename.c_str(), strlen(filename.c_str()), 0);
+                usleep(100000);
+                // Enviar separador para sinalizar o fim do nome do arquivo
+                send_file(filename, socket_client);
+                usleep(100000);
 
-            //Envia mensagem ao servidor
-            send(socket_client, message.c_str(), message.length(), 0);
+                // Enviar sinal de término do arquivo
+                send(socket_client, "/endfile", 8, 0);
 
+                cout << "\n[CLIENT] Arquivo " << filename << " enviado com sucesso.\n"; 
+            }else{//Envia mensagem ao servidor
+                send(socket_client, message.c_str(), message.length(), 0);
+            }
             //Recebe mensagem do servidor
             recv(socket_client, buffer_server, BUFFER_SIZE, 0);
-            cout << "Mensagem do Servidor: "<< buffer_server << '\n';
+            cout << "\n"<< buffer_server << '\n';
 
             //Limpa buffer
             memset(buffer_server, 0, BUFFER_SIZE);
@@ -70,4 +88,32 @@ int main() {
     close(socket_client);
 
     return 0;
+}
+
+void send_file(string filename, int socket){
+    char buffer[BUFFER_SIZE] = {0};
+    FILE *fp = fopen(filename.c_str(), "r");
+
+    while(fgets(buffer, BUFFER_SIZE, fp) != NULL){
+        if (send(socket, buffer, strlen(buffer), 0) == -1) {
+            perror("Erro ao enviar o arquivo.");
+            exit(EXIT_FAILURE);
+        }
+        memset(buffer, 0, BUFFER_SIZE);
+    } 
+
+    fclose(fp);
+}
+
+
+bool extractFileName(const string& input, string& fileName){
+    const string prefix = "/file ";
+
+    // Verifica se a string começa com "/file "
+    if(input.substr(0, prefix.size()) == prefix){
+        // Extrai o nome do arquivo
+        fileName = input.substr(prefix.size());
+        return true;
+    }
+    return false;
 }

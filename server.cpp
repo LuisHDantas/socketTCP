@@ -11,6 +11,8 @@
 
 using namespace std;
 
+void write_file(int new_socket, char *filename);
+
 int main(){
     int socket_server, socket_client;
     struct sockaddr_in address_server;
@@ -55,7 +57,10 @@ int main(){
         exit(EXIT_FAILURE);
     }
 
+    cout << "Servidor conectado a um cliente\n\n";
+
     const string OK_message = "[SERVER] ok.";
+    const string OK_file = "[SERVER] Arquivo Salvo.";
     const string CLOSE_message = "[SERVER] close.";
     const string ERROR_message = "[SERVER] erro.";
     // Receber e imprimir mensagens do cliente
@@ -65,10 +70,26 @@ int main(){
 
         int bytes = recv(socket_client, buffer_message, BUFFER_SIZE, 0); //nenhuma flag será usada
         if(bytes > 0){
-            cout << "Mensagem recebida do cliente: " << buffer_message << '\n';
-            
-            //Envia resposta ao cliente
-            send(socket_client, OK_message.c_str(), OK_message.length(), 0);
+            //Verifica se esta recebendo um arquivo
+            if(strncmp(buffer_message, "/file", 5) == 0){
+                // Receber o nome do arquivo
+                bytes = recv(socket_client, buffer_message, BUFFER_SIZE, 0);
+                if (bytes > 0) {
+                    char filename[BUFFER_SIZE];
+                    strncpy(filename, buffer_message, bytes);
+                    filename[bytes] = '\0';
+                    cout << "\n[SERVER] Recebendo arquivo: " << filename << '\n';
+                    write_file(socket_client, filename);
+                    cout << "Arquivo " << filename << " recebido com sucesso.\n\n";
+
+                    //Envia resposta ao cliente 
+                    send(socket_client, OK_file.c_str(), OK_file.length(), 0);
+                }
+            } else {
+                cout << "Client: " << buffer_message << '\n';
+                //Envia resposta ao cliente
+                send(socket_client, OK_message.c_str(), OK_message.length(), 0);
+            }
         }else if (bytes == 0){
             cout << '\n';
             //Envia resposta de erro ao cliente
@@ -87,4 +108,37 @@ int main(){
     close(socket_server);
 
     return 0;
+}
+
+
+void write_file(int new_socket, char *filename){
+    int n;
+    FILE *fp;
+    char buffer[BUFFER_SIZE] = {0};
+    char caminho[BUFFER_SIZE] = "serverArqs/";
+
+    strcat(caminho, filename);
+    fp = fopen(caminho, "w");
+    if(fp == NULL){
+        perror("Erro ao abrir o arquivo");
+        exit(EXIT_FAILURE);
+    }
+
+    while((n = recv(new_socket, buffer, BUFFER_SIZE, 0)) > 0){
+        if (strncmp(buffer, "/endfile", 8) == 0) {
+            break;  // Sinal de término do arquivo
+        }
+
+        if (fwrite(buffer, sizeof(char), n, fp) != n) {
+            perror("Erro ao escrever no arquivo");
+            exit(EXIT_FAILURE);
+        }
+        memset(buffer, 0, BUFFER_SIZE);
+    }
+
+    if(n < 0){
+        perror("Erro ao receber o arquivo");
+    }
+
+    fclose(fp);
 }
