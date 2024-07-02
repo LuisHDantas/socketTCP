@@ -15,19 +15,11 @@ O mecanismo	que	oferece	capacidade para	 troca de informações em rede mais uti
 
 ## Objetivo
 
-O trabalho consistiu na criação de um sistema de comunicação cliente-servidor baseado em sockets TCP. Nosso objetivo principal foi estabelecer uma infraestrutura que permitisse a interação eficiente entre múltiplos clientes e um servidor central. 
+Desenvolvemos um sistema de comunicação cliente-servidor usando sockets TCP, com foco na interação eficiente entre múltiplos clientes e um servidor central. O socket TCP permitiu comunicação bidirecional confiável, e o sistema suportou múltiplos clientes simultâneos sem interferências mútuas.
 
-Inicialmente, implementamos um socket TCP que serviu como canal de comunicação bidirecional. Isso possibilitou que os clientes se conectassem de forma confiável ao servidor, estabelecendo sessões de comunicação robustas e seguras.
+Implementamos a troca de mensagens e a transferência de arquivos entre clientes e servidor, garantindo a integridade dos dados. O servidor exibia as mensagens com o nome do remetente, facilitando a organização das interações. Além disso, criamos a pasta serverArqs no servidor para armazenar os arquivos enviados pelos clientes de forma segura e centralizada.
 
-Um dos pontos cruciais do sistema foi o suporte para múltiplos clientes simultaneamente. Cada cliente foi capaz de se conectar e interagir com o servidor de maneira independente, garantindo que as comunicações de um não interferissem nas dos outros.
-
-Além da troca de mensagens, desenvolvemos funcionalidades para o envio de arquivos entre clientes e servidor. Implementamos protocolos de transferência que asseguraram a integridade dos dados durante o envio e o recebimento dos arquivos.
-
-Para melhor organização e identificação das mensagens recebidas, configuramos o servidor para exibir cada mensagem com o nome do respectivo cliente. Isso facilitou a compreensão e o gerenciamento das interações dentro do sistema.
-
-Por fim, criamos uma estrutura de armazenamento no servidor, especificamente na pasta `serverArqs`, onde todos os arquivos enviados pelos clientes foram salvos de forma segura e organizada. Isso permitiu que o servidor gerenciasse e mantivesse os arquivos recebidos de maneira centralizada.
-
-Essas funcionalidades combinadas resultaram em um sistema de comunicação cliente-servidor robusto, capaz de lidar com múltiplos usuários simultaneamente, troca de mensagens e transferência de arquivos de forma eficiente e organizada.
+O resultado foi um sistema robusto, eficiente e organizado para comunicação e transferência de arquivos entre múltiplos usuários e o servidor.
 
 ## Compilação
 
